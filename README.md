@@ -21,7 +21,7 @@ A full-stack e-commerce web application for auto parts, seamlessly integrated wi
 
 This project uses a hybrid architecture to efficiently handle both synchronous web requests and asynchronous bot operations:
 1. **Flask** serves the main web application, handles user sessions, and interacts with the database.
-2. **FastAPI** provides an internal API endpoint. When an admin adds a new product, Flask sends a request to FastAPI.
+2. **FastAPI** provides an internal API endpoint. When an user adds a new product, Flask sends a request to FastAPI.
 3. **FastAPI BackgroundTasks** triggers the **aiogram** bot to broadcast messages to all Telegram subscribers asynchronously, ensuring the web interface remains fast and responsive.
 
 ## 💻 Installation and Setup

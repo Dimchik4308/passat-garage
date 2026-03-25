@@ -87,11 +87,6 @@ uvicorn bot_prod:app --reload
 ```
 *The notification API will run on `http://127.0.0.1:8000`*
 
-## 📸 Screenshots
-*(Add images of your web app and Telegram bot here to make the repository more attractive)*
-* `![Home Page](path/to/image.png)`
-* `![Telegram Bot Notification](path/to/image.png)`
-
 ## 👨‍💻 Author
 **Dimchik4308**
 * Junior Python Developer

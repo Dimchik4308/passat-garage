@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}
+	Вхід - Passat Garage
+{% endblock %}
+{% block main %}
+    <div class="add-page-wrapper">
+    <div class="add-form-container">
+        <h1>Вхід</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+    <form method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="username">Ім'я користувача</label>
+        <input type="text" name="username" id="username"  minlength="2" required>
+    </div>
+    <div class="form-group">
+        <label for="password">Пароль користувача</label>
+        <input type="password" name="password" id="password"  minlength="8" required>
+    </div>
+    <button type="submit" class="submit-btn sub">Увійти</button>
+    </form>
+        <p>Якщо ви хочете зареєструватися натисність</p>
+        <a href="{{ url_for('signup') }}" class="sign-in-link">тут</a>
+    </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}
+	Мої замовлення - Passat Garage
+{% endblock %}
+{% block side %}
+<aside class="sidebar">
+            <ul>
+                <li>
+                    <a href="{{ url_for('waiting_orders') }}"
+                       class="{% if request.path == url_for('waiting_orders') %}active{% endif %}">
+                       Очікують на підтвердження
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('inprocess_orders') }}"
+                       class="{% if request.path == url_for('inprocess_orders') %}active{% endif %}">
+                       В обробці
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('finished_orders') }}"
+                       class="{% if request.path == url_for('finished_orders') %}active{% endif %}">
+                       Завершені
+                    </a>
+                </li>
+             <li>
+                    <a href="{{ url_for('denied_orders') }}"
+                       class="{% if request.path == url_for('denied_orders') %}active{% endif %}">
+                       Відхиленні
+                    </a>
+                </li>
+            <li>
+                    <a href="{{ url_for('my_orders') }}"
+                       class="{% if request.path == url_for('my_orders') %}active{% endif %}">
+                       Всі
+                    </a>
+                </li>
+            </ul>
+        </aside>
+{% endblock %}
+{% block main %}
+{% set active_orders = orders | selectattr('state', '!=', 'finished') | list %}
+    {% set active_buy_orders = buy_orders | selectattr('state', '!=', 'finished') | list %}
+    <h1 class="top" style="border: none;text-align: center">🛒 Мої замовлення</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+{% if active_orders or active_buy_orders %}
+{% if active_order %}
+
+    <h2 style="margin-bottom: 16px; color:white; text-transform: uppercase;border-bottom: 2px solid #333; padding-bottom: 15px">Продаю</h2>
+    <div class="product_list">
+    {% for order in active_orders %}
+        <a href="{{ url_for('order_detail', id=order.id )}}" class="product-link ">
+        <div class="product">
+            <img src="/{{ order.fixed_img_url }}" alt="{{ order.fixed_title }}">
+            <h3>{{ order.fixed_title }}</h3>
+            <div class="product-footer">
+                <p class="price">{{ order.fixed_price }}₴</p>
+                <button class="buy-btn">Деталі замовлення</button>
+            </div>
+        </div>
+                </a>
+    {% endfor %}
+    </div>
+    {% endif %}
+    {% if active_buy_orders %}
+
+        <h2 style="margin-top:16px; margin-bottom: 16px;  color:white; text-transform: uppercase;border-bottom: 2px solid #333; padding-bottom: 15px">Купую</h2>
+    <div class="product_list">
+            {% for order in active_buy_orders %}
+        <a href="{{ url_for('order_detail', id=order.id )}}" class="product-link ">
+        <div class="product">
+            <img src="/{{ order.fixed_img_url }}" alt="{{ order.fixed_title }}">
+            <h3>{{ order.fixed_title }}</h3>
+            <div class="product-footer">
+                <p class="price">{{ order.fixed_price }}₴</p>
+                <button class="buy-btn">Деталі замовлення</button>
+            </div>
+        </div>
+                </a>
+    {% endfor %}
+        </div>
+        {% endif %}
+{% else %}
+<div class="empty-state">
+        <h2>Тут поки пусто... 🐢</h2>
+        <p>Але ви можете додати товар і покупці зацікавляться, або ж купити те що вам треба😊</p>
+        <a href="{{ url_for('add_good') }}" class="add-btn-link">Додати товар</a>
+
+        <a href="{{ url_for('catalog') }}" class="add-btn-link" style="margin-left: 10px">Купити товар</a>
+            </div>
+    {% endif %}
+{% endblock %}

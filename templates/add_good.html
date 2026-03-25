@@ -1,0 +1,64 @@
+{%  extends 'base.html' %}
+{% block title %}
+Додати товар
+{% endblock %}
+{% block main %}<div class="add-page-wrapper">
+    <div class="add-form-container">
+        <h1>🔧 Додати нову запчастину</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+        <form method="post" enctype="multipart/form-data"> <div class="form-group">
+                <label for="title">Назва товару</label>
+                <input type="text" name="title" id="title" placeholder="Наприклад: Гальмівні колодки Bosch" required>
+            </div>
+            <div class="form-group">
+                <label for="price">Ціна</label>
+                <input type="number" step="any" name="price" id="price" min="0" placeholder="Ціну вказувати в гривнях (₴)" required>
+            </div>
+            <div class="form-group">
+                <label for="quantity">Кількість</label>
+                <input type="number" step="1" name="quantity" id="quantity" min="0" placeholder="За замовчуванням 1" value="1" required >
+            </div>
+            <div class="form-group">
+                <label for="town">Населений пункт</label>
+                <input type="text" name="town" id="town" minlength='2' placeholder="Наприклад: Львів" required>
+            </div>
+            <div class="form-group">
+                <label for="category">Категорія</label>
+                <div class="select-wrapper">
+                    <select id="category" name="category">
+                        <option value="🚗 Ходова частина">🚗 Ходова частина</option>
+                        <option value="🔧 Двигун та вихлоп">🔧 Двигун та вихлоп</option>
+                        <option value="🛑 Гальмівна система">🛑 Гальмівна система</option>
+                        <option value="⚡ Електрика та світло">⚡ Електрика та світло</option>
+                        <option value="💧 Мастила та рідини">💧 Мастила та рідини</option>
+                        <option value="✨ Інше">✨ Інше</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="imageUpload">Фотографія</label>
+                <input type="file" id="imageUpload" name="imageFile" accept="image/*" class="file-input" required>
+            </div>
+
+            <div class="form-group">
+                <label for="descr">Опис</label>
+                <textarea name="descr" id="descr" rows="5" placeholder="Введіть детальний опис запчастини..." required></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">Опублікувати товар</button>
+
+        </form>
+    </div>
+</div>
+{% endblock %}

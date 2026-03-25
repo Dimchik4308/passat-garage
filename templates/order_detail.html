@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Деталі замовлення - Passat Garage
+{% endblock %}
+
+{% block main %}
+<div class="detail-wrapper">
+    <a href="{{ url_for('my_orders') }}" class="back-link">← Повернутися до замовлень</a>
+
+    <div class="product-card-detail">
+
+        <div class="detail-image-container">
+            {% if order.fixed_img_url %}
+                <img src="/{{ order.fixed_img_url }}" alt="{{ order.fixed_title }}">
+            {% else %}
+                <img src="{{ url_for('static', filename='img/no-image.png') }}" alt="Нема фото">
+            {% endif %}
+        </div>
+
+
+
+
+
+        <div class="detail-info order-info">
+         <h1 class="detail-title top-aligned-title">Деталі замовлення №{{ order.id }}</h1>
+            <h1 class="detail-title top-aligned-title">Назва товару: {{ order.fixed_title }}</h1>
+            <h2>Ім'я покупця: {{ order.fname }}</h2>
+            <h2>Прізвище покупця: {{ order.sname }}</h2>
+            <h2>Кількість товару: {{ order.quantity }}</h2>
+            <h2>Населений пункт покупця: {{ order.town }}</h2>
+            <h2>Пошта: {{ order.mail }}</h2>
+            <h2>Індекс відділення: {{ order.zip_code }}</h2>
+        <h2>Дата замовлення: {{ order.date.strftime('%d. %m. %Y') }}</h2>
+        <h2>Час замовлення: {{ order.date.strftime('%H. %M.') }}</h2>
+        <h2>Статус замовлення: {% if order.state== 'waiting' %}Очікує на підтвердження{% elif order.state== 'inprocess' %}В обробці{% elif order.state== 'finished' %}Завершено{% elif order.state== 'denied' %}Відхилено{% endif %}</h2>
+            <h2>До сплати: {{ order.total }}₴</h2>
+        <div class="comment"><h3>Коментар до замовлення:</h3> {{ order.comm }}</div>
+            {% if current_user.id==order.seller.id %}
+            <h2>Написати покупцю</h2>
+            <a href="mailto:{{ order.buyer.email }}" class="contact-btn">{{ order.buyer.email }}</a>
+            {% if order.state=='waiting' %}
+                <div class="admin-buttons">
+            <a href="{{ url_for('set_status',status='inprocess',id=order.id) }}" class="btn-edit">✅ Підтвердити</a>
+
+            <a href="{{ url_for('set_status',status='denied',id=order.id) }}" class="btn-delete" onclick="return confirm('Точно відхилити замовлення?')">❎ Відхилити</a>
+            </div>
+                {% endif %}
+            {% else %}
+                <h2>Написати продавцю</h2>
+            <a href="mailto:{{ order.seller.email }}" class="contact-btn">{{ order.seller.email }}</a>
+                {% if order.state=='inprocess' %}
+                    <div class="admin-buttons">
+            <a href="{{ url_for('set_status',status='finished',id=order.id) }}" class="btn-edit">✅ Підтвердити надходження</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+</div>
+    </div>
+{% endblock %}

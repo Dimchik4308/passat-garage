@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}
+{{ q }} - Passat Garage
+{% endblock %}
+{% block side %}
+<aside class="sidebar">
+            <ul>
+                <li>
+                    <a href="{{ url_for('running') }}"
+                       class="{% if request.path == url_for('running') %}active{% endif %}">
+                       🚗 Ходова частина
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('engine') }}"
+                       class="{% if request.path == url_for('engine') %}active{% endif %}">
+                       🔧 Двигун та вихлоп
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('brakes') }}"
+                       class="{% if request.path == url_for('brakes') %}active{% endif %}">
+                       🛑 Гальмівна система
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('electric') }}"
+                       class="{% if request.path == url_for('electric') %}active{% endif %}">
+                       ⚡ Електрика та світло
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('liquids') }}"
+                       class="{% if request.path == url_for('liquids') %}active{% endif %}">
+                       💧 Мастила та рідини
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('other') }}"
+                       class="{% if request.path == url_for('other') %}active{% endif %}">
+                       ✨ Інше
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('catalog') }}"
+                       class="{% if request.path == url_for('catalog') %}active{% endif %}">
+                       📂 Всі товари
+                    </a>
+                </li>
+            </ul>
+        </aside>
+{% endblock %}
+{% block main %}
+
+	<h1 class="top">Результати за вашим запитом: {{ q }}</h1>
+            <div class="product_list">
+        {% if goods %}
+            {% for g in goods %}
+                <a href="{{ url_for('good_detail', slug=g.slug )}}" class="product-link ">
+        <div class="product">
+            <img src="{{ g.image_url }}" alt="{{ g.title }}">
+            <h3>{{ g.title }}</h3>
+            <div class="product-footer">
+                <p class="price">{{ g.price }}₴</p>
+                {% if g.author.id!=current_user.id %}
+                <button class="buy-btn">Купити</button>
+                {% else %}
+                <button class="buy-btn">Переглянути</button>
+                {% endif %}
+            </div>
+        </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <h2>Тут поки пусто... 🐢</h2>
+                <p>Але ви можете переглянути інші товари в каталозі</p>
+                <a href="{{ url_for('catalog') }}" class="add-btn-link">Каталог</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}
+	Мої товари - Passat Garage
+{% endblock %}
+{% block main %}
+<h1 class="top">Мої товари</h1>
+            <div class="product_list">
+        {% if goods %}
+            {% for g in goods %}
+                <a href="{{ url_for('good_detail', slug=g.slug )}}" class="product-link ">
+        <div class="product">
+            <img src="/{{ g.image_url }}" alt="{{ g.title }}">
+            <h3>{{ g.title }}</h3>
+            <div class="product-footer">
+                <p class="price">{{ g.price }}₴</p>
+                <button class="buy-btn">Купити</button>
+            </div>
+        </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <h2>Тут поки пусто... 🐢</h2>
+                <p>Але ви можете додати нові товари</p>
+                <a href="{{ url_for('add_good') }}" class="add-btn-link">Додати перший товар</a>
+            </div>
+        {% endif %}
+    </div>
+
+{% endblock %}

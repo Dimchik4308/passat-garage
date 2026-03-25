@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ good.title }} - Passat Garage
+{% endblock %}
+
+{% block main %}
+<div class="detail-wrapper">
+
+    <a href="{{ url_for('catalog') }}" class="back-link">← Повернутися в каталог</a>
+    <div class="product-card-detail">
+
+        <div class="detail-image-container">
+            {% if good.image_url %}
+                <img src="/{{ good.image_url }}" alt="{{ good.title }}">
+            {% else %}
+                <img src="{{ url_for('static', filename='img/no-image.png') }}" alt="Нема фото">
+            {% endif %}
+        </div>
+
+        <div class="detail-info">
+
+            {% if good.category %}
+                <span class="detail-category">{{ good.category }}</span>
+            {% endif %}
+
+            <h1 class="detail-title">{{ good.title }}</h1>
+
+            <div class="detail-price-block">
+                {% if good.price ==0 %}
+                <span class="detail-price">Задарма</span>
+                {% else %}
+                <span class="detail-price">{{ good.price }} ₴</span>
+                {% endif %}
+                {% if good.quantity>0 %}
+                    <span class="stock-status">В наявності ({{ good.quantity }}шт)</span>
+                {% else %}
+                    <span class="stock-status stock-statuss">Немає в наявності</span>
+                {% endif %}
+            </div>
+            {% if good.quantity!=0 and current_user.id!=good.author.id%}
+            <a href="{{ url_for('buy_good',slug=good.slug) }}">
+            <button class="detail-buy-btn">КУПИТИ ЗАРАЗ</button>
+            </a>
+            {% endif %}
+            <div class="short-features">
+                <p>✅ Гарантія якості</p>
+                <p>🚚 Швидка доставка</p>
+                <p>🛠 Перевірено Passat Garage</p>
+            </div>
+        {% if current_user.is_authenticated and current_user.id == good.author.id %}
+        <div class="admin-buttons">
+            <a href="{{ url_for('good_update', slug=good.slug) }}" class="btn-edit">✏️ Редагувати</a>
+
+            <a href="{{ url_for('good_delete', slug=good.slug) }}" class="btn-delete" onclick="return confirm('Точно видалити цей товар?')">🗑️ Видалити</a>
+        </div>
+        {% endif %}
+        </div>
+    </div>
+    <div class="info-page-container">
+
+    <div class="detail-card user-info">
+        <h2>👤 Продавець</h2>
+        <div class="info-content">
+            <h3>{{ good.author.username }}</h3>
+            <p>Email: <a href="mailto:{{ good.author.email }}">{{ good.author.email }}</a></p>
+            <a href="mailto:{{ good.author.email }}" class="contact-btn">Написати продавцю</a> <br>
+            <p>Населений пункт: <b>{{ good.town }}</b></p>
+        </div>
+    </div>
+
+    <div class="detail-card description-block">
+        <h2>📄 Опис товару</h2>
+        <div class="desc-text">
+            {{ good.descr }}
+        </div>
+    </div>
+
+</div>
+<section class="similar-products-section">
+    <h3 class="similar-title">Схожі товари з цієї категорії</h3>
+
+    <div class="similar-scroll-container">
+
+        {% for item in similar_goods %}
+        <a href="{{ url_for('good_detail', slug=item.slug) }}" class="similar-card">
+            <div class="similar-img-wrapper">
+                <img src="/{{ item.image_url }}" alt="{{ item.title }}">
+            </div>
+            <div class="similar-info">
+                <h4>{{ item.title }}</h4>
+                <p class="similar-price">{{ item.price }}₴</p>
+            </div>
+        </a>
+        {% endfor %}
+        {% if good.category=='🚗 Ходова частина' %}
+        <a href="{{ url_for('running') }}" class="similar-view-all">
+            <div class="view-all-content">
+                <span class="view-all-icon">➝</span>
+                <p>Більше товарів</p>
+            </div>
+        </a>
+        {% elif good.category=='🔧 Двигун та вихлоп'  %}
+        <a href="{{ url_for('engine', category=good.category) }}" class="similar-view-all">
+                <div class="view-all-content">
+                    <span class="view-all-icon">➝</span>
+                    <p>Більше товарів</p>
+                </div>
+            </a>
+        {% elif good.category=='🛑 Гальмівна система'  %}
+        <a href="{{ url_for('brakes', category=good.category) }}" class="similar-view-all">
+                <div class="view-all-content">
+                    <span class="view-all-icon">➝</span>
+                    <p>Більше товарів</p>
+                </div>
+            </a>
+        {% elif good.category=='🛑 Гальмівна система'  %}
+            <a href="{{ url_for('brakes', category=good.category) }}" class="similar-view-all">
+                    <div class="view-all-content">
+                        <span class="view-all-icon">➝</span>
+                        <p>Більше товарів</p>
+                    </div>
+                </a>
+        {% elif good.category=='⚡ Електрика та світло'  %}
+        <a href="{{ url_for('electric', category=good.category) }}" class="similar-view-all">
+                <div class="view-all-content">
+                    <span class="view-all-icon">➝</span>
+                    <p>Більше товарів</p>
+                </div>
+            </a>
+        {% elif good.category=='💧 Мастила та рідини'  %}
+        <a href="{{ url_for('electric', category=good.category) }}" class="similar-view-all">
+                <div class="view-all-content">
+                    <span class="view-all-icon">➝</span>
+                    <p>Більше товарів</p>
+                </div>
+            </a>
+        {% elif good.category=='✨ Інше'  %}
+        <a href="{{ url_for('other', category=good.category) }}" class="similar-view-all">
+                <div class="view-all-content">
+                    <span class="view-all-icon">➝</span>
+                    <p>Більше товарів</p>
+                </div>
+            </a>
+    {% endif %}
+    </div>
+</section>
+    </div>
+{% endblock %}

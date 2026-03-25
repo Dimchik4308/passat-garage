@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+
+</head>
+<body>
+    <header>
+            <div class="main_header">
+                <a href="{{ url_for('main_page') }}" class="name">Passat Garage</a>
+
+                <div class="nav_links">
+                    <nav>
+
+
+                        <a href="{{ url_for('main_page') }}">Головна</a>
+                        <a href="{{ url_for('catalog') }}">Каталог</a>
+                        <a href="{{ url_for('about') }}">Про нас</a>
+
+                        {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('add_good') }}" class="add-btn">
+                            <span class="plus">+</span> Додати товар
+                        </a>
+                            <div class="dropdown">
+                                <a href="javascript:void(0)" onclick="toggleMenu()" class="dropbtn">
+                                    {{ current_user.username }} ▼
+                                </a>
+                                <div id="myDropdown" class="dropdown-content">
+                                    <a href="{{ url_for('link_tg') }}">Прив'язати Телеграм</a>
+                                    <a href="{{ url_for('user_good') }}">Мої товари</a>
+                                    <a href="{{ url_for('my_orders') }}">Мої замовлення</a>
+                                    <a href="{{ url_for('logout') }}">Вийти</a>
+                                </div>
+                            </div>
+                    {% else %}
+                        {% if request.endpoint != 'signup' and request.endpoint != 'signin' %}
+                            <a href="{{ url_for('signup') }}" class="add-btn">Зареєструватися/Увійти</a>
+                        {% endif %}
+                    {% endif %}
+
+                    </nav>
+
+                </div>
+
+            </div>
+        </header>
+    <div class="main_part">
+        {% block side %}
+        {% endblock %}
+
+    <main>{% if request.path == url_for('main_page') or request.path == url_for('catalog')  or request.path == url_for('search') %}
+        <form method="get" enctype="multipart/form-data" action="{{ url_for('search') }}" class="search-form">
+                        <input type="text" name="q" class="search-input" placeholder="Наприклад: Гальмівні колодки" min="1">
+                        <button type="submit" class="search-btn">Шукати</button>
+                            </form>
+    {% endif %}
+        {% block main %}{% endblock %}</main>
+    </div>
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>⚠️ Увага</h3>
+                <p>Цей сайт створено в <strong>навчальних цілях</strong>.</p>
+                <p>Це не справжній інтернет-магазин. Жодні товари не продаються, а замовлення не обробляються.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Навігація</h3>
+                <ul>
+                    <li><a href="{{ url_for('main_page') }}">Головна</a></li>
+                    <li><a href="{{ url_for('catalog') }}">Каталог запчастин</a></li>
+                    <li><a href="{{ url_for('about') }}">Про нас</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Зв'язок</h3>
+                <p>Шукаю роботу Trainee/Junior Python Developer</p>
+                <ul class="contacts-list">
+                    <li><a href="mailto:dmytrolaz16031980@gmail.com">📩 dmytrolaz16031980@gmail.com</a></li>
+                    <li><a href="https://github.com/Dimchik4308" target="_blank">🐙 GitHub Profile</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="copyright">
+            &copy; 2026 Passat Garage Project. Всі права захищені.(Напевно)
+        </div>
+    </footer>
+<script src="{{ url_for('static',filename='js/script.js') }}"></script>
+</body>
+</html>

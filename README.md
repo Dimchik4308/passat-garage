@@ -1,4 +1,3 @@
-````markdown
 # 🚗 Passat Garage - E-commerce & Telegram Bot Integration
 
 A full-stack e-commerce web application for auto parts, seamlessly integrated with a Telegram bot for real-time notifications. This pet project was developed to showcase solid backend development, database design, and asynchronous programming skills.

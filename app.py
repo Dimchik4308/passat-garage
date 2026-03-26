@@ -38,7 +38,7 @@ def about():
 @app.route('/telegram')
 def link_tg():
     code=randint(10000,99999)
-    bot_api_url = "http://127.0.0.1:8000/api/link"
+    bot_api_url = os.getenv('FASTAPI_URL')
     payload = {
         "us_id": int(current_user.id),
         "code": int(code)
@@ -91,7 +91,7 @@ def set_status(status,id):
     if status=='waiting' or status=='denied' or status=='inprocess' or status=='finished' and id in ids:
         order = Order.query.get(id)
         order.state = status
-        bot_api_url = "http://127.0.0.1:8000/api/order_status"
+        bot_api_url = os.getenv('FASTAPI_URL')
 
         payload = {
             "code": str(status),
@@ -169,7 +169,7 @@ def buy_good(slug):
             order=Order(fname=fname,sname=sname,quantity=quantity,town=town,mail=mail,zip_code=zip_code,comm=comm,
                          seller_id=good.author.id,buyer_id=current_user.id,good_id=good.id,fixed_title=good.title,
                          fixed_price=good.price,fixed_img_url=good.image_url,fixed_slug=good.slug,total=total)
-            bot_api_url = "http://127.0.0.1:8000/api/order_not"
+            bot_api_url = os.getenv('FASTAPI_URL')
 
             payload = {
                 "fname":str(fname),
@@ -394,7 +394,7 @@ def add_good():
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], final))
                 image_url=f'static/uploads/{final}'
             good=Good(title=title,price=price,descr=descr,category=category,image_url=image_url,author=current_user,slug=slug_str,quantity=quantity,town=town,lower_title=lower_title)
-            bot_api_url = "http://127.0.0.1:8000/api/notify"
+            bot_api_url = os.getenv("FASTAPI_URL")
             payload = {
                 "img_url":str(image_url),
                 "title": str(title),

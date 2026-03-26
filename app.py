@@ -16,7 +16,7 @@ app = Flask(__name__)
 load_dotenv()
 
 app.config['SECRET_KEY']=os.getenv("FLASK_SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"]="sqlite:///garage.db"
+app.config["SQLALCHEMY_DATABASE_URI"]=os.getenv('DATABASE_URL','sqlite:///garage.db')
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 

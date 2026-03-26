@@ -27,7 +27,7 @@ class Good(db.Model):
     image_url = db.Column(db.String(200), nullable=False)
     category = db.Column(db.String(50), nullable=False)
     date=db.Column(db.DateTime, default=datetime.now)
-    user_slug=db.Column(db.Integer, db.ForeignKey('user.slug'))
+    user_slug=db.Column(db.String(255), db.ForeignKey('user.slug'))
     slug=db.Column(db.String(255), unique=True , nullable=False)
     quantity=db.Column(db.Integer,  default=1, server_default='1', nullable=False)
     orders=db.Column(db.Integer,  default=1, server_default='1', nullable=False)

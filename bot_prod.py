@@ -14,10 +14,20 @@ from shared.database import db
 from shared.models import Good,BotUser,Order, BotLogin
 import os
 from dotenv import load_dotenv
+from fastapi import Header, HTTPException, Depends
+import redis.asyncio as redis
 
-BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:5000")
+async def verify_api_key(x_internal_key: str = Header(None)):
+    expected_key = os.getenv("INTERNAL_API_KEY")
+    if x_internal_key != expected_key:
+        raise HTTPException(status_code=403, detail="Wrong API Key")
+    return x_internal_key
+
+BASE_URL = os.getenv("BASE_URL")
 load_dotenv()
 
+redis_url = f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/{os.getenv('REDIS_DB')}"
+redis_client = redis.from_url(redis_url, decode_responses=True)
 bot=Bot(token=os.getenv("BOT_TOKEN"))
 dp=Dispatcher()
 markup=ReplyKeyboardMarkup(keyboard=[
@@ -133,8 +143,8 @@ class Status(BaseModel):
     seller_name:str
     buyer_name:str
 
-@app.post('/api/order_status')
-async def send_status(status: Status):
+@app.post('/order_status')
+async def send_status(status: Status, _ = Depends(verify_api_key)):
     if status.code=='denied':
         text=(f'🚨Продавець {status.seller_name}🚨'
               f'❎ Відхилив ваше замовлення {status.title} ❎'
@@ -143,6 +153,7 @@ async def send_status(status: Status):
         with flaskapp.app_context():
             tg = BotLogin.query.filter_by(user_id=status.buyer_id).first()
         await bot.send_message(chat_id=tg.user_telegram_id, text=text, parse_mode="HTML")
+        return {"status": "ok"}
     if status.code == 'inprocess':
         text = (f'🚨 Продавець {status.seller_name} 🚨'
                 f'✅ Підтвердив ваше замовлення {status.title} ✅'
@@ -151,6 +162,7 @@ async def send_status(status: Status):
         with flaskapp.app_context():
             tg = BotLogin.query.filter_by(user_id=status.buyer_id).first()
         await bot.send_message(chat_id=tg.user_telegram_id, text=text, parse_mode="HTML")
+        return {"status": "ok"}
     if status.code == 'finished':
         text = (f'🚨 Покупець {status.buyer_name} 🚨'
                 f'✅ Забрав замовлення {status.title} з пошти ✅'
@@ -159,10 +171,10 @@ async def send_status(status: Status):
         with flaskapp.app_context():
             tg = BotLogin.query.filter_by(user_id=status.seller_id).first()
         await bot.send_message(chat_id=tg.user_telegram_id, text=text, parse_mode="HTML")
+        return {"status": "ok"}
 
-
-@app.post('/api/order_not')
-async def send_order_info(order:OrderNot):
+@app.post('/order_not')
+async def send_order_info(order:OrderNot, _ = Depends(verify_api_key)):
     text=(f"🚨 У вас нове замовлення 🚨\n"
           f"👤 Ім'я покупця: {order.fname}\n"
           f"👤 Прізвище покупця: {order.sname}\n"
@@ -177,9 +189,10 @@ async def send_order_info(order:OrderNot):
     with flaskapp.app_context():
         tg=BotLogin.query.filter_by(user_id=order.seller_id).first()
     await bot.send_message(chat_id=tg.user_telegram_id,text=text,parse_mode="HTML")
+    return {"status": "ok"}
 
-@app.post('/api/notify')
-async def send_not(good: GoodNot, background_tasks: BackgroundTasks):
+@app.post('/notify')
+async def send_not(good: GoodNot, background_tasks: BackgroundTasks, _ = Depends(verify_api_key)):
     price_text = 'Задарма' if good.price == 0 else f'{good.price}₴'
     text = (
         f'🚨 Новий товар на сайті \n'
@@ -196,50 +209,34 @@ async def send_not(good: GoodNot, background_tasks: BackgroundTasks):
         background_tasks.add_task(broadcast_message, user_ids, text, good.img_url)
     return {"status": "ok", "message": "Повідомлення успішно відправлено в ТГ!"}
 
-class Link(BaseModel):
-    code: int
-    us_id: int
-
-@app.post('/api/link')
-async def link(data: Link):
-    global codes
-    code=data.code
-    us=data.us_id
-    codes[code]=us
-    print(codes)
-    return {"status": "ok", "message": "Код очікує активації в боті"}
-
 @dp.message(Command('link'))
 async def link(message: types.Message, command: CommandObject):
-    global codes
     if command.args is None:
-        await message.answer('Введіть код після команди')
+        await message.answer('Введіть код після команди /link <код>')
         return
-    try:
-        code=int(command.args)
-        print(code,codes)
-    except ValueError:
-        await message.answer('Код має складатися лише з цифр')
-        return
-    if code in codes:
-        user_id=codes[code]
-        tg_id=message.from_user.id
+    input_code = command.args.strip()
+    user_site_id = await redis_client.get(f"auth_code:{input_code}")
+    if user_site_id:
+        tg_id = message.from_user.id
         try:
             with flaskapp.app_context():
-                tg_user=BotLogin(user_id=user_id,user_telegram_id=tg_id)
+                tg_user = BotLogin(user_id=int(user_site_id), user_telegram_id=tg_id)
                 db.session.add(tg_user)
                 db.session.commit()
-            await message.answer("Ви успішно прив'язали телеграм до вашого акаунту")
-            del codes[code]
+            await message.answer("Ви успішно прив'язали телеграм до вашого акаунту 🚗")
+            await redis_client.delete(f"auth_code:{input_code}")
+            
         except Exception as e:
-            await message.answer('Виникла помилка, спробуйте ще раз')
-            del codes[code]
+            print(f"Error: {e}")
+            await message.answer('Виникла помилка під час запису в базу. Спробуйте ще раз.')
+            db.session.rollback()
     else:
-        await message.answer('Ваш код неправильний')
+        await message.answer('Ваш код неправильний або термін його дії (5 хв) вичерпано.')
+
 
 
 async def main():
-    config = uvicorn.Config(app=app, host="127.0.0.1", port=8000, log_level="info")
+    config = uvicorn.Config(app=app, host="127.0.0.1", port=8001, log_level="info")
     server = uvicorn.Server(config)
 
     await bot.delete_webhook(drop_pending_updates=True)

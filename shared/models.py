@@ -43,7 +43,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer,primary_key=True)
     username = db.Column(db.String(20), unique=True , nullable=False)
     email = db.Column(db.String(100), unique=True , nullable=False)
-    password = db.Column(db.String(30), nullable=False)
+    password = db.Column(db.String(1000), nullable=False)
     slug=db.Column(db.String(255),unique=True, nullable=False)
     goods=db.relationship('Good', backref='author', lazy= True)
     fname=db.Column(db.String(20), nullable=False)

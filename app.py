@@ -11,12 +11,14 @@ from random import randint
 import time
 import os
 from dotenv import load_dotenv
+import redis
+
 app = Flask(__name__)
 
 load_dotenv()
 
 app.config['SECRET_KEY']=os.getenv("FLASK_SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"]=os.getenv('DATABASE_URL','sqlite:///garage.db')
+app.config["SQLALCHEMY_DATABASE_URI"]=os.getenv('FLASK_DATABASE_URL')
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -26,6 +28,12 @@ db.init_app(app)
 login_manager=LoginManager(app)
 login_manager.login_view = 'signin'
 
+r = redis.Redis(
+    host=os.getenv('REDIS_HOST', '127.0.0.1'),
+    port=int(os.getenv('REDIS_PORT', 6379)),
+    db=int(os.getenv('REDIS_DB', 0)),
+    decode_responses=True
+)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -37,17 +45,16 @@ def about():
 
 @app.route('/telegram')
 def link_tg():
-    code=randint(10000,99999)
-    bot_api_url = os.getenv('FASTAPI_URL')
-    payload = {
-        "us_id": int(current_user.id),
-        "code": int(code)
-    }
-    try:
-        response = requests.post(bot_api_url, json=payload)
-    except requests.exceptions.RequestException as e:
-        return f'Виникла помилка {e}'
-    return render_template('tg.html',code=code)
+    def generate_random_code():
+        while True:
+            code = str(randint(0, 999999)).zfill(6)
+            if not r.exists(f"auth_code:{code}"):
+                return code
+    user_id = current_user.id 
+    auth_code = generate_random_code() 
+    r.set(f"auth_code:{auth_code}", user_id, ex=300)
+
+    return render_template('tg.html', code=auth_code)
 
 @app.route('/search')
 def search():
@@ -105,9 +112,10 @@ def set_status(status,id):
         }
 
         try:
-            response = requests.post(bot_api_url, json=payload)
+            headers = {"X-Internal-Key": os.getenv("INTERNAL_API_KEY")}
+            response = requests.post(f'{bot_api_url}/order_status', json=payload,headers=headers)
         except requests.exceptions.RequestException as e:
-            return f'Виникла помилка {e}'
+            return f'Виникла помилка'
 
     else:
         abort(403)
@@ -186,9 +194,10 @@ def buy_good(slug):
             }
 
             try:
-                response = requests.post(bot_api_url, json=payload)
+                headers = {"X-Internal-Key": os.getenv("INTERNAL_API_KEY")}
+                response = requests.post(f'{bot_api_url}/order_not', json=payload,headers=headers)
             except requests.exceptions.RequestException as e:
-                return f'Виникла помилка {e}'
+                return f'Виникла помилка '
             try:
                 good.quantity -= int(quantity)
                 good.orders += 1
@@ -404,7 +413,8 @@ def add_good():
             }
 
             try:
-                response = requests.post(bot_api_url, json=payload)
+                headers = {"X-Internal-Key": os.getenv("INTERNAL_API_KEY")}
+                response = requests.post(f'{bot_api_url}/notify', json=payload,headers=headers)
             except requests.exceptions.RequestException as e:
                 return f'Виникла помилка {e}'
             try:
